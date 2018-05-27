@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.status = new System.Windows.Forms.StatusStrip();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -38,12 +38,14 @@
             this.fileExportMap = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.editMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.editGridSize = new System.Windows.Forms.ToolStripMenuItem();
-            this.editOutputSize = new System.Windows.Forms.ToolStripMenuItem();
+            this.editTileCount = new System.Windows.Forms.ToolStripMenuItem();
+            this.editTileSize = new System.Windows.Forms.ToolStripMenuItem();
             this.panels = new System.Windows.Forms.SplitContainer();
             this.imageList = new System.Windows.Forms.DataGridView();
             this.imageColumn = new System.Windows.Forms.DataGridViewImageColumn();
             this.mapImage = new System.Windows.Forms.PictureBox();
+            this.gridInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            this.status.SuspendLayout();
             this.menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panels)).BeginInit();
             this.panels.Panel1.SuspendLayout();
@@ -55,6 +57,8 @@
             // 
             // status
             // 
+            this.status.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.gridInfo});
             this.status.Location = new System.Drawing.Point(0, 772);
             this.status.Name = "status";
             this.status.Size = new System.Drawing.Size(874, 22);
@@ -119,24 +123,24 @@
             // editMenu
             // 
             this.editMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editGridSize,
-            this.editOutputSize});
+            this.editTileCount,
+            this.editTileSize});
             this.editMenu.Name = "editMenu";
             this.editMenu.Size = new System.Drawing.Size(39, 20);
             this.editMenu.Text = "Edit";
             // 
-            // editGridSize
+            // editTileCount
             // 
-            this.editGridSize.Name = "editGridSize";
-            this.editGridSize.Size = new System.Drawing.Size(144, 22);
-            this.editGridSize.Text = "Grid Size...";
-            this.editGridSize.Click += new System.EventHandler(this.editGridSize_Click);
+            this.editTileCount.Name = "editTileCount";
+            this.editTileCount.Size = new System.Drawing.Size(152, 22);
+            this.editTileCount.Text = "Tile Count...";
+            this.editTileCount.Click += new System.EventHandler(this.editTileCount_Click);
             // 
-            // editOutputSize
+            // editTileSize
             // 
-            this.editOutputSize.Name = "editOutputSize";
-            this.editOutputSize.Size = new System.Drawing.Size(144, 22);
-            this.editOutputSize.Text = "Output Size...";
+            this.editTileSize.Name = "editTileSize";
+            this.editTileSize.Size = new System.Drawing.Size(152, 22);
+            this.editTileSize.Text = "Tile Size...";
             // 
             // panels
             // 
@@ -169,14 +173,14 @@
             this.imageList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.imageColumn});
             this.imageList.Cursor = System.Windows.Forms.Cursors.Hand;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.imageList.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.imageList.DefaultCellStyle = dataGridViewCellStyle4;
             this.imageList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.imageList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             this.imageList.Location = new System.Drawing.Point(0, 0);
@@ -215,6 +219,13 @@
             this.mapImage.TabStop = false;
             this.mapImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mapImage_MouseClick);
             // 
+            // gridInfo
+            // 
+            this.gridInfo.BackColor = System.Drawing.SystemColors.Control;
+            this.gridInfo.Name = "gridInfo";
+            this.gridInfo.Size = new System.Drawing.Size(112, 17);
+            this.gridInfo.Text = "Tiles: X,Y Tile Size: X";
+            // 
             // MapCombiner
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -229,6 +240,8 @@
             this.Name = "MapCombiner";
             this.Text = "Map Combiner";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MapCombiner_KeyDown);
+            this.status.ResumeLayout(false);
+            this.status.PerformLayout();
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
             this.panels.Panel1.ResumeLayout(false);
@@ -256,9 +269,10 @@
         private System.Windows.Forms.ToolStripMenuItem fileSaveMap;
         private System.Windows.Forms.ToolStripMenuItem fileExportMap;
         private System.Windows.Forms.ToolStripMenuItem editMenu;
-        private System.Windows.Forms.ToolStripMenuItem editOutputSize;
+        private System.Windows.Forms.ToolStripMenuItem editTileSize;
         private System.Windows.Forms.DataGridViewImageColumn imageColumn;
-        private System.Windows.Forms.ToolStripMenuItem editGridSize;
+        private System.Windows.Forms.ToolStripMenuItem editTileCount;
+        private System.Windows.Forms.ToolStripStatusLabel gridInfo;
     }
 }
 

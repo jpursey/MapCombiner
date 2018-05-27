@@ -15,13 +15,14 @@ namespace MapCombiner
         public MapCombiner()
         {
             InitializeComponent();
+            this.mapImage.MouseWheel += mapImage_MouseWheel;
+
             m_gridPos = new Point(0, 0);
-            m_gridSize = new Size(3, 3);
-            m_cellSize = 250;
-            m_grid = new Cell[m_gridSize.Width, m_gridSize.Height];
-            m_previewImage = new Bitmap(m_gridSize.Width * m_cellSize, m_gridSize.Height * m_cellSize);
-            UpdateImage();
-            mapImage.Image = m_previewImage;
+            m_cellSize = 200;
+            m_cellOutputSize = 400;
+            m_grid = new Cell[4, 4];
+            UpdateGridInfo();
+            ResizeImage();
         }
 
         //--------------------------------------------------------------------------------------------------------------
@@ -37,6 +38,7 @@ namespace MapCombiner
             public float angle;
             public Point offset;
         };
+
         static Rotation[] rotations = {
             new Rotation(0, new Point(0,0)),
             new Rotation(90, new Point(1,0)),
@@ -52,9 +54,55 @@ namespace MapCombiner
 
         private Cell[,] m_grid;
         private Point m_gridPos;
-        private Size m_gridSize;
         private int m_cellSize;
+        private int m_cellOutputSize;
         private Bitmap m_previewImage;
+
+        private void UpdateGridInfo()
+        {
+            var builder = new StringBuilder();
+            builder.AppendFormat("Count: {0},{1} Size: {2}px", 
+                m_grid.GetLength(0), m_grid.GetLength(1), m_cellOutputSize);
+            gridInfo.Text = builder.ToString();
+
+        }
+
+        private void UpdateTileCount(int countX, int countY)
+        {
+            if (countX < 1 || countX > 20 || countY < 1 || countY > 20)
+            {
+                MessageBox.Show("Tile count values must be between 1 and 20", 
+                                "Invalid Tile Count", MessageBoxButtons.OK);
+                return;
+            }
+            var newGrid = new Cell[countX, countY];
+            foreach (int x in Enumerable.Range(1, Math.Min(countX, m_grid.GetLength(0)) - 1))
+            {
+                foreach (int y in Enumerable.Range(1, Math.Min(countY, m_grid.GetLength(1)) - 1))
+                {
+                    newGrid[x, y] = m_grid[x, y];
+                }
+            }
+            m_grid = newGrid;
+            UpdateGridInfo();
+            ResizeImage();
+        }
+
+        private void ResizeImage()
+        {
+            while (m_grid.GetLength(0) * m_cellSize > 10000 || 
+                   m_grid.GetLength(1) * m_cellSize > 10000)
+            {
+                m_cellSize = m_cellSize / 2;
+            }
+            if (m_previewImage != null)
+            {
+                m_previewImage.Dispose();
+            }
+            m_previewImage = new Bitmap(m_grid.GetLength(0) * m_cellSize, m_grid.GetLength(1) * m_cellSize);
+            mapImage.Image = m_previewImage;
+            UpdateImage();
+        }
 
         private void UpdateImage()
         {
@@ -62,9 +110,9 @@ namespace MapCombiner
             {
                 graphics.Clear(Color.Black);
 
-                for (int x = 0; x < m_gridSize.Width; ++x)
+                for (int x = 0; x < m_grid.GetLength(0); ++x)
                 {
-                    for (int y = 0; y < m_gridSize.Height; ++y)
+                    for (int y = 0; y < m_grid.GetLength(1); ++y)
                     {
                         if (m_grid[x,y].image != null)
                         {
@@ -149,11 +197,6 @@ namespace MapCombiner
             }
         }
 
-        private void editGridSize_Click(object sender, EventArgs e)
-        {
-            // TODO
-        }
-
         private void imageList_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             var image = imageList.Rows[e.RowIndex].Cells[e.ColumnIndex].Value as Image;
@@ -173,8 +216,8 @@ namespace MapCombiner
         private void mapImage_MouseClick(object sender, MouseEventArgs e)
         {
             var newPos = new Point(e.Location.X / m_cellSize, e.Location.Y / m_cellSize);
-            if (newPos.X < 0 || newPos.X >= m_gridSize.Width || 
-                newPos.Y < 0 || newPos.Y >= m_gridSize.Height)
+            if (newPos.X < 0 || newPos.X >= m_grid.GetLength(0) || 
+                newPos.Y < 0 || newPos.Y >= m_grid.GetLength(1))
             {
                 return;
             }
@@ -188,12 +231,70 @@ namespace MapCombiner
             UpdateImage();
         }
 
+        private void mapImage_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta < 0 && m_cellSize > 50)
+            {
+                m_cellSize /= 2;
+                ResizeImage();
+            }
+            else if (e.Delta > 0 && m_cellSize < 500)
+            {
+                m_cellSize *= 2;
+                ResizeImage();
+            }
+        }
+
         private void MapCombiner_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back)
+            switch (e.KeyCode)
             {
-                m_grid[m_gridPos.X, m_gridPos.Y].image = null;
-                UpdateImage();
+                case Keys.Delete:
+                case Keys.Back:
+                    m_grid[m_gridPos.X, m_gridPos.Y].image = null;
+                    UpdateImage();
+                    break;
+                case Keys.Up:
+                    if (m_gridPos.Y > 0)
+                    {
+                        m_gridPos.Y -= 1;
+                        UpdateImage();
+                    }
+                    break;
+                case Keys.Down:
+                    if (m_gridPos.Y < m_grid.GetLength(1) - 1)
+                    {
+                        m_gridPos.Y += 1;
+                        UpdateImage();
+                    }
+                    break;
+                case Keys.Left:
+                    if (m_gridPos.X > 0)
+                    {
+                        m_gridPos.X -= 1;
+                        UpdateImage();
+                    }
+                    break;
+                case Keys.Right:
+                    if (m_gridPos.X < m_grid.GetLength(0) - 1)
+                    {
+                        m_gridPos.X += 1;
+                        UpdateImage();
+                    }
+                    break;
+            }
+        }
+
+        private void editTileCount_Click(object sender, EventArgs e)
+        {
+            using (var editTileCount = new EditTileCount())
+            {
+                editTileCount.CountX = m_grid.GetLength(0);
+                editTileCount.CountY = m_grid.GetLength(1);
+                if (editTileCount.ShowDialog() == DialogResult.OK)
+                {
+                    UpdateTileCount(editTileCount.CountX, editTileCount.CountY);
+                }
             }
         }
     }
