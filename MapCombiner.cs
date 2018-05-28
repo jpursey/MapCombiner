@@ -361,7 +361,7 @@ namespace MapCombiner
         {
             var sfd = new SaveFileDialog();
             sfd.AddExtension = true;
-            sfd.FileName = m_mapFilename;
+            sfd.FileName = Path.GetFileNameWithoutExtension(m_mapFilename);
             sfd.Title = "Save Map As";
             sfd.Filter = "Map files (*.mc)|*.mc|All files (*.*)|*.*";
             sfd.FilterIndex = 1;
@@ -377,7 +377,7 @@ namespace MapCombiner
             sfd.AddExtension = true;
             sfd.FileName = Path.GetFileNameWithoutExtension(m_mapFilename);
             sfd.Title = "Export Map";
-            sfd.Filter = "Image files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*jpeg;*.png;*.bmp|All files (*.*)|*.*";
+            sfd.Filter = "Image files (*.png)|*.png|All files (*.*)|*.*";
             sfd.FilterIndex = 1;
             if (sfd.ShowDialog() != DialogResult.OK)
                 return;
