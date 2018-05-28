@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.status = new System.Windows.Forms.StatusStrip();
             this.statusInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.menu = new System.Windows.Forms.MenuStrip();
@@ -43,9 +43,9 @@
             this.editSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.panels = new System.Windows.Forms.SplitContainer();
             this.imageList = new System.Windows.Forms.DataGridView();
-            this.mapImage = new System.Windows.Forms.PictureBox();
             this.imageColumn = new System.Windows.Forms.DataGridViewImageColumn();
             this.filenameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mapImage = new System.Windows.Forms.PictureBox();
             this.status.SuspendLayout();
             this.menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panels)).BeginInit();
@@ -132,6 +132,7 @@
             this.fileExportMap.Name = "fileExportMap";
             this.fileExportMap.Size = new System.Drawing.Size(182, 22);
             this.fileExportMap.Text = "Export Map";
+            this.fileExportMap.Click += new System.EventHandler(this.fileExportMap_Click);
             // 
             // fileExit
             // 
@@ -187,14 +188,14 @@
             this.imageColumn,
             this.filenameColumn});
             this.imageList.Cursor = System.Windows.Forms.Cursors.Hand;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.imageList.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.imageList.DefaultCellStyle = dataGridViewCellStyle1;
             this.imageList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.imageList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             this.imageList.Location = new System.Drawing.Point(0, 0);
@@ -213,17 +214,6 @@
             this.imageList.TabIndex = 0;
             this.imageList.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.imageList_CellContentClick);
             // 
-            // mapImage
-            // 
-            this.mapImage.BackColor = System.Drawing.Color.DarkRed;
-            this.mapImage.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mapImage.Location = new System.Drawing.Point(0, 0);
-            this.mapImage.Name = "mapImage";
-            this.mapImage.Size = new System.Drawing.Size(745, 748);
-            this.mapImage.TabIndex = 0;
-            this.mapImage.TabStop = false;
-            this.mapImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mapImage_MouseClick);
-            // 
             // imageColumn
             // 
             this.imageColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
@@ -239,6 +229,17 @@
             this.filenameColumn.Name = "filenameColumn";
             this.filenameColumn.ReadOnly = true;
             this.filenameColumn.Visible = false;
+            // 
+            // mapImage
+            // 
+            this.mapImage.BackColor = System.Drawing.Color.DarkRed;
+            this.mapImage.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mapImage.Location = new System.Drawing.Point(0, 0);
+            this.mapImage.Name = "mapImage";
+            this.mapImage.Size = new System.Drawing.Size(745, 748);
+            this.mapImage.TabIndex = 0;
+            this.mapImage.TabStop = false;
+            this.mapImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mapImage_MouseClick);
             // 
             // MapCombiner
             // 

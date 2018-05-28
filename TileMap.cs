@@ -101,9 +101,11 @@ namespace MapCombiner
         public void Resize(int countX, int countY)
         {
             var newTiles = new Tile[countX * countY];
-            foreach (int x in Enumerable.Range(1, Math.Min(countX, CountX) - 1))
+            var minCountX = Math.Min(countX, CountX);
+            var minCountY = Math.Min(countY, CountY);
+            for (int x = 0; x < minCountX; ++x)
             {
-                foreach (int y in Enumerable.Range(1, Math.Min(countY, CountY) - 1))
+                for (int y = 0; y < minCountY; ++y)
                 {
                     newTiles[x + y * countX] = m_tiles[x + y * CountX];
                 }

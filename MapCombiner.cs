@@ -87,6 +87,36 @@ namespace MapCombiner
             fileSaveMap.Enabled = true;
         }
 
+        private void SaveImage(string filename)
+        {
+            int tileSize = ClampTileSize(m_tileMap.TileSize);
+            if (tileSize != m_tileMap.TileSize)
+            {
+                var message = new StringBuilder().
+                    AppendFormat("Tile size reduced to {0}. Continue?", tileSize).ToString();
+                if (MessageBox.Show(message, "Export Map", MessageBoxButtons.YesNo) == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                using (var image = new Bitmap(m_tileMap.CountX * tileSize, m_tileMap.CountY * tileSize))
+                {
+                    using (var graphics = Graphics.FromImage(image))
+                    {
+                        DrawImage(graphics, tileSize);
+                    }
+                    image.Save(filename);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Failed to save image to file: " + filename, "Export Map", MessageBoxButtons.OK);
+            }
+        }
+
         private void UpdateStatus()
         {
             var builder = new StringBuilder();
@@ -121,13 +151,19 @@ namespace MapCombiner
             UpdateStatus();
         }
 
+        private int ClampTileSize(int tileSize)
+        {
+            while (m_tileMap.CountX * tileSize > 10000 ||
+                   m_tileMap.CountY * tileSize > 10000)
+            {
+                tileSize = tileSize / 2;
+            }
+            return tileSize;
+        }
+
         private void ResizeImage()
         {
-            while (m_tileMap.CountX * m_tileViewSize > 10000 || 
-                   m_tileMap.CountY * m_tileViewSize > 10000)
-            {
-                m_tileViewSize = m_tileViewSize / 2;
-            }
+            m_tileViewSize = ClampTileSize(m_tileViewSize);
             if (m_previewImage != null)
             {
                 mapImage.Image = null;
@@ -138,34 +174,37 @@ namespace MapCombiner
             UpdateImage();
         }
 
+        private void DrawImage(Graphics graphics, int tileSize)
+        {
+            graphics.Clear(Color.Black);
+            for (int x = 0; x < m_tileMap.CountX; ++x)
+            {
+                for (int y = 0; y < m_tileMap.CountY; ++y)
+                {
+                    if (m_tileMap[x, y].Image != null)
+                    {
+                        graphics.ResetTransform();
+                        var rot = Rotation.Values[m_tileMap[x, y].Rotation];
+                        graphics.TranslateTransform((x + rot.offset.X) * tileSize,
+                                                    (y + rot.offset.Y) * tileSize);
+                        graphics.RotateTransform(rot.angle);
+                        graphics.DrawImage(m_tileMap[x, y].Image, 0, 0,
+                            tileSize + rot.offset.Y, tileSize + rot.offset.X);
+                    }
+                }
+            }
+        }
+
         private void UpdateImage()
         {
             using (var graphics = Graphics.FromImage(m_previewImage))
             {
-                graphics.Clear(Color.Black);
+                DrawImage(graphics, m_tileViewSize);
 
-                for (int x = 0; x < m_tileMap.CountX; ++x)
-                {
-                    for (int y = 0; y < m_tileMap.CountY; ++y)
-                    {
-                        if (m_tileMap[x,y].Image != null)
-                        {
-                            graphics.ResetTransform();
-                            var rot = Rotation.Values[m_tileMap[x, y].Rotation];
-                            graphics.TranslateTransform((x + rot.offset.X) * m_tileViewSize, 
-                                                        (y + rot.offset.Y) * m_tileViewSize);
-                            graphics.RotateTransform(rot.angle);
-                            graphics.DrawImage(m_tileMap[x, y].Image, 0, 0, 
-                                m_tileViewSize + rot.offset.Y, m_tileViewSize + rot.offset.X);
-                        }
-                        if (x == m_tilePos.X && y == m_tilePos.Y)
-                        {
-                            graphics.ResetTransform();
-                            graphics.DrawRectangle(Pens.Yellow, 
-                                x * m_tileViewSize, y * m_tileViewSize, m_tileViewSize - 1, m_tileViewSize - 1);
-                        }
-                    }
-                }
+                graphics.ResetTransform();
+                graphics.DrawRectangle(Pens.Yellow, 
+                    m_tilePos.X * m_tileViewSize, m_tilePos.Y * m_tileViewSize, 
+                    m_tileViewSize - 1, m_tileViewSize - 1);
             }
             mapImage.Invalidate();
         }
@@ -330,6 +369,20 @@ namespace MapCombiner
                 return;
 
             SaveMap(sfd.FileName);
+        }
+
+        private void fileExportMap_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.FileName = Path.GetFileNameWithoutExtension(m_mapFilename);
+            sfd.Title = "Export Map";
+            sfd.Filter = "Image files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*jpeg;*.png;*.bmp|All files (*.*)|*.*";
+            sfd.FilterIndex = 1;
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            SaveImage(sfd.FileName);
         }
     }
 }
