@@ -12,16 +12,16 @@ namespace MapCombiner
         public static Result<Bitmap> Load(string filename)
         {
 
-            Bitmap newBitmap = null;
-            if (s_bitmaps.TryGetValue(filename, out newBitmap))
+            Bitmap bitmap = null;
+            if (s_bitmaps.TryGetValue(filename, out bitmap))
             {
-                return Result<Bitmap>.Success(newBitmap);
+                return Result<Bitmap>.Success(bitmap);
             }
             try
             {
                 using (Image fileImage = Image.FromFile(filename))
                 {
-                    newBitmap = new Bitmap(fileImage);
+                    bitmap = new Bitmap(fileImage);
                 }
             }
             catch (OutOfMemoryException)
@@ -36,8 +36,8 @@ namespace MapCombiner
             {
                 return Result<Bitmap>.Error("Unknown error");
             }
-            s_bitmaps[filename] = newBitmap;
-            return Result<Bitmap>.Success(newBitmap);
+            s_bitmaps[filename] = bitmap;
+            return Result<Bitmap>.Success(bitmap);
         }
 
         private static Dictionary<string, Bitmap> s_bitmaps = new Dictionary<string, Bitmap>();

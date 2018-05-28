@@ -21,7 +21,10 @@ namespace MapCombiner
             InitializeComponent();
             mapImage.MouseWheel += mapImage_MouseWheel;
             fileSaveMap.Enabled = false;
+            editUndo.Enabled = false;
+            editRedo.Enabled = false;
 
+            m_commands = new Commands();
             m_tileMap = new TileMap(4, 4, 400);
             m_tilePos = new Point(0, 0);
             m_tileViewSize = 200;
@@ -31,13 +34,17 @@ namespace MapCombiner
         }
 
         //--------------------------------------------------------------------------------------------------------------
-        // Private Implementation
+        // Data
 
         private TileMap m_tileMap;
         private Point m_tilePos;
         private int m_tileViewSize;
         private string m_mapFilename;
         private Bitmap m_previewImage;
+        private Commands m_commands;
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Operations
 
         private void LoadMap(string filename)
         {
@@ -61,6 +68,9 @@ namespace MapCombiner
             m_mapFilename = filename;
             fileSaveMap.Enabled = true;
             m_tileMap = newMap;
+            m_commands.Reset();
+            editUndo.Enabled = false;
+            editRedo.Enabled = false;
             ResizeImage();
             UpdateStatus();
         }
@@ -126,29 +136,11 @@ namespace MapCombiner
 
         }
 
-        private void UpdateTileCount(int countX, int countY)
+        private void UpdateSettings(int countX, int countY, int tileSize)
         {
-            if (countX < 1 || countX > 20 || countY < 1 || countY > 20)
-            {
-                MessageBox.Show("Tile count values must be between 1 and 20", 
-                                "Invalid Tile Count", MessageBoxButtons.OK);
-                return;
-            }
             m_tileMap.Resize(countX, countY);
             UpdateStatus();
             ResizeImage();
-        }
-
-        private void UpdateOutputSize(int size)
-        {
-            if (size < 50 || size > 1000)
-            {
-                MessageBox.Show("Tile output size must be between 50 and 1000", 
-                                "Invalid Tile Size", MessageBoxButtons.OK);
-                return;
-            }
-            m_tileMap.TileSize = size;
-            UpdateStatus();
         }
 
         private int ClampTileSize(int tileSize)
@@ -210,6 +202,112 @@ namespace MapCombiner
         }
 
         //--------------------------------------------------------------------------------------------------------------
+        // Commands
+
+        void DoSetTileFilename(string filename)
+        {
+            m_commands.Do(new ChangeTileCommand(this, 
+                new Tile(filename, m_tileMap[m_tilePos.X, m_tilePos.Y].Rotation)));
+            editUndo.Enabled = m_commands.CanUndo;
+            editRedo.Enabled = m_commands.CanRedo;
+        }
+
+        void DoSetTileRotation(int rotation)
+        {
+            m_commands.Do(new ChangeTileCommand(this, 
+                new Tile(m_tileMap[m_tilePos.X, m_tilePos.Y].Filename, rotation)));
+            editUndo.Enabled = m_commands.CanUndo;
+            editRedo.Enabled = m_commands.CanRedo;
+        }
+
+        void DoDeleteTile()
+        {
+            m_commands.Do(new ChangeTileCommand(this, new Tile()));
+            editUndo.Enabled = m_commands.CanUndo;
+            editRedo.Enabled = m_commands.CanRedo;
+        }
+
+        void DoChangeSettings(int countX, int countY, int tileSize)
+        {
+            m_commands.Do(new ChangeSettingsCommand(this, countX, countY, tileSize));
+            editUndo.Enabled = m_commands.CanUndo;
+            editRedo.Enabled = m_commands.CanRedo;
+        }
+
+        class ChangeTileCommand : ICommand
+        {
+            public ChangeTileCommand(MapCombiner form, Tile tile)
+            {
+                m_form = form;
+                m_pos = form.m_tilePos;
+                m_tile = tile;
+                m_oldTile = m_form.m_tileMap[m_pos.X, m_pos.Y];
+            }
+
+            public void Redo()
+            {
+                m_form.m_tileMap[m_pos.X, m_pos.Y] = m_tile;
+                m_form.UpdateImage();
+            }
+
+            public void Undo()
+            {
+                m_form.m_tileMap[m_pos.X, m_pos.Y] = m_oldTile;
+                m_form.UpdateImage();
+            }
+
+            private MapCombiner m_form;
+            private Point m_pos;
+            private Tile m_tile;
+            private Tile m_oldTile;
+        }
+
+        class ChangeSettingsCommand : ICommand
+        {
+            public ChangeSettingsCommand(MapCombiner form, int countX, int countY, int tileSize)
+            {
+                m_form = form;
+                m_oldMap = m_form.m_tileMap;
+                m_countChanged = (countX != m_form.m_tileMap.CountX || countY != m_form.m_tileMap.CountY);
+                m_countX = countX;
+                m_countY = countY;
+                m_tileSize = tileSize;
+                m_oldTileSize = m_oldMap.TileSize;
+            }
+
+            public void Redo()
+            {
+                if (m_countChanged)
+                {
+                    m_form.m_tileMap = (TileMap)m_form.m_tileMap.Clone();
+                    m_form.m_tileMap.Resize(m_countX, m_countY);
+                    m_form.ResizeImage();
+                }
+                m_form.m_tileMap.TileSize = m_tileSize;
+                m_form.UpdateStatus();
+            }
+
+            public void Undo()
+            {
+                if (m_countChanged)
+                {
+                    m_form.m_tileMap = m_oldMap;
+                    m_form.ResizeImage();
+                }
+                m_form.m_tileMap.TileSize = m_oldTileSize;
+                m_form.UpdateStatus();
+            }
+
+            private MapCombiner m_form;
+            private bool m_countChanged;
+            private TileMap m_oldMap;
+            private int m_countX;
+            private int m_countY;
+            private int m_tileSize;
+            private int m_oldTileSize;
+        }
+
+        //--------------------------------------------------------------------------------------------------------------
         // Event handlers
 
         private void fileExit_Click(object sender, EventArgs e)
@@ -247,9 +345,7 @@ namespace MapCombiner
 
         private void imageList_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            m_tileMap[m_tilePos.X, m_tilePos.Y].Reset( 
-                imageList.Rows[e.RowIndex].Cells[e.ColumnIndex + 1].Value as string);
-            UpdateImage();
+            DoSetTileFilename(imageList.Rows[e.RowIndex].Cells[e.ColumnIndex + 1].Value as string);
         }
 
         private void mapImage_MouseClick(object sender, MouseEventArgs e)
@@ -261,13 +357,17 @@ namespace MapCombiner
                 return;
             }
 
-            m_tilePos = newPos;
-            if (e.Button == MouseButtons.Right)
+            switch (e.Button)
             {
-                m_tileMap[m_tilePos.X, m_tilePos.Y].Rotation = 
-                    (m_tileMap[m_tilePos.X, m_tilePos.Y].Rotation + 1) % Rotation.Values.Length;
+                case MouseButtons.Left:
+                    m_tilePos = newPos;
+                    UpdateImage();
+                    break;
+                case MouseButtons.Right:
+                    m_tilePos = newPos;
+                    DoSetTileRotation((m_tileMap[m_tilePos.X, m_tilePos.Y].Rotation + 1) % Rotation.Values.Length);
+                    break;
             }
-            UpdateImage();
         }
 
         private void mapImage_MouseWheel(object sender, MouseEventArgs e)
@@ -290,8 +390,7 @@ namespace MapCombiner
             {
                 case Keys.Delete:
                 case Keys.Back:
-                    m_tileMap[m_tilePos.X, m_tilePos.Y].Reset();
-                    UpdateImage();
+                    DoDeleteTile();
                     break;
                 case Keys.Up:
                     if (m_tilePos.Y > 0)
@@ -333,8 +432,19 @@ namespace MapCombiner
                 settings.OutputSize = m_tileMap.TileSize;
                 if (settings.ShowDialog() == DialogResult.OK)
                 {
-                    UpdateTileCount(settings.CountX, settings.CountY);
-                    UpdateOutputSize(settings.OutputSize);
+                    if (settings.CountX < 1 || settings.CountX > 20 || settings.CountY < 1 || settings.CountY > 20)
+                    {
+                        MessageBox.Show("Tile count values must be between 1 and 20",
+                                        "Invalid Tile Count", MessageBoxButtons.OK);
+                        return;
+                    }
+                    if (settings.OutputSize < 50 || settings.OutputSize > 1000)
+                    {
+                        MessageBox.Show("Tile output size must be between 50 and 1000",
+                                        "Invalid Tile Size", MessageBoxButtons.OK);
+                        return;
+                    }
+                    DoChangeSettings(settings.CountX, settings.CountY, settings.OutputSize);
                 }
             }
         }
@@ -383,6 +493,20 @@ namespace MapCombiner
                 return;
 
             SaveImage(sfd.FileName);
+        }
+
+        private void editUndo_Click(object sender, EventArgs e)
+        {
+            m_commands.Undo();
+            editUndo.Enabled = m_commands.CanUndo;
+            editRedo.Enabled = m_commands.CanRedo;
+        }
+
+        private void editRedo_Click(object sender, EventArgs e)
+        {
+            m_commands.Redo();
+            editUndo.Enabled = m_commands.CanUndo;
+            editRedo.Enabled = m_commands.CanRedo;
         }
     }
 }

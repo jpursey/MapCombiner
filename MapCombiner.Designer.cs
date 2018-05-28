@@ -46,6 +46,8 @@
             this.imageColumn = new System.Windows.Forms.DataGridViewImageColumn();
             this.filenameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mapImage = new System.Windows.Forms.PictureBox();
+            this.editUndo = new System.Windows.Forms.ToolStripMenuItem();
+            this.editRedo = new System.Windows.Forms.ToolStripMenuItem();
             this.status.SuspendLayout();
             this.menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panels)).BeginInit();
@@ -144,7 +146,9 @@
             // editMenu
             // 
             this.editMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editSettings});
+            this.editSettings,
+            this.editUndo,
+            this.editRedo});
             this.editMenu.Name = "editMenu";
             this.editMenu.Size = new System.Drawing.Size(39, 20);
             this.editMenu.Text = "Edit";
@@ -152,7 +156,7 @@
             // editSettings
             // 
             this.editSettings.Name = "editSettings";
-            this.editSettings.Size = new System.Drawing.Size(125, 22);
+            this.editSettings.Size = new System.Drawing.Size(152, 22);
             this.editSettings.Text = "Settings...";
             this.editSettings.Click += new System.EventHandler(this.editSettings_Click);
             // 
@@ -241,6 +245,22 @@
             this.mapImage.TabStop = false;
             this.mapImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mapImage_MouseClick);
             // 
+            // editUndo
+            // 
+            this.editUndo.Name = "editUndo";
+            this.editUndo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.editUndo.Size = new System.Drawing.Size(152, 22);
+            this.editUndo.Text = "Undo";
+            this.editUndo.Click += new System.EventHandler(this.editUndo_Click);
+            // 
+            // editRedo
+            // 
+            this.editRedo.Name = "editRedo";
+            this.editRedo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.editRedo.Size = new System.Drawing.Size(152, 22);
+            this.editRedo.Text = "Redo";
+            this.editRedo.Click += new System.EventHandler(this.editRedo_Click);
+            // 
             // MapCombiner
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -289,6 +309,8 @@
         private System.Windows.Forms.ToolStripMenuItem fileSaveMapAs;
         private System.Windows.Forms.DataGridViewImageColumn imageColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn filenameColumn;
+        private System.Windows.Forms.ToolStripMenuItem editUndo;
+        private System.Windows.Forms.ToolStripMenuItem editRedo;
     }
 }
 

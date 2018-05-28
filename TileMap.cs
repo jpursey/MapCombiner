@@ -62,7 +62,7 @@ namespace MapCombiner
     };
 
     [DataContract]
-    class TileMap
+    class TileMap : ICloneable
     {
         public TileMap(int countX, int countY, int outputSize)
         {
@@ -113,6 +113,21 @@ namespace MapCombiner
             CountX = countX;
             CountY = countY;
             m_tiles = newTiles;
+        }
+
+        public object Clone()
+        {
+            var newMap = new TileMap(CountX, CountY, TileSize);
+            for (int x = 0; x < CountX; ++x)
+            {
+                for (int y = 0; y < CountY; ++y)
+                {
+                    var srcTile = m_tiles[x + y * CountX];
+                    if (srcTile != null)
+                        newMap[x, y].Reset(srcTile.Filename, srcTile.Rotation);
+                }
+            }
+            return newMap;
         }
 
         //--------------------------------------------------------------------------------------------------------------
