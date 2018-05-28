@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.status = new System.Windows.Forms.StatusStrip();
             this.statusInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.menu = new System.Windows.Forms.MenuStrip();
@@ -41,13 +41,15 @@
             this.fileExit = new System.Windows.Forms.ToolStripMenuItem();
             this.editMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.editSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.editUndo = new System.Windows.Forms.ToolStripMenuItem();
+            this.editRedo = new System.Windows.Forms.ToolStripMenuItem();
             this.panels = new System.Windows.Forms.SplitContainer();
             this.imageList = new System.Windows.Forms.DataGridView();
             this.imageColumn = new System.Windows.Forms.DataGridViewImageColumn();
             this.filenameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mapImage = new System.Windows.Forms.PictureBox();
-            this.editUndo = new System.Windows.Forms.ToolStripMenuItem();
-            this.editRedo = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.status.SuspendLayout();
             this.menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panels)).BeginInit();
@@ -79,7 +81,8 @@
             // 
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileMenu,
-            this.editMenu});
+            this.editMenu,
+            this.helpMenu});
             this.menu.Location = new System.Drawing.Point(0, 0);
             this.menu.Name = "menu";
             this.menu.Size = new System.Drawing.Size(874, 24);
@@ -160,6 +163,22 @@
             this.editSettings.Text = "Settings...";
             this.editSettings.Click += new System.EventHandler(this.editSettings_Click);
             // 
+            // editUndo
+            // 
+            this.editUndo.Name = "editUndo";
+            this.editUndo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.editUndo.Size = new System.Drawing.Size(152, 22);
+            this.editUndo.Text = "Undo";
+            this.editUndo.Click += new System.EventHandler(this.editUndo_Click);
+            // 
+            // editRedo
+            // 
+            this.editRedo.Name = "editRedo";
+            this.editRedo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.editRedo.Size = new System.Drawing.Size(152, 22);
+            this.editRedo.Text = "Redo";
+            this.editRedo.Click += new System.EventHandler(this.editRedo_Click);
+            // 
             // panels
             // 
             this.panels.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -192,14 +211,14 @@
             this.imageColumn,
             this.filenameColumn});
             this.imageList.Cursor = System.Windows.Forms.Cursors.Hand;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.imageList.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.imageList.DefaultCellStyle = dataGridViewCellStyle1;
             this.imageList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.imageList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             this.imageList.Location = new System.Drawing.Point(0, 0);
@@ -245,21 +264,20 @@
             this.mapImage.TabStop = false;
             this.mapImage.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mapImage_MouseClick);
             // 
-            // editUndo
+            // helpMenu
             // 
-            this.editUndo.Name = "editUndo";
-            this.editUndo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.editUndo.Size = new System.Drawing.Size(152, 22);
-            this.editUndo.Text = "Undo";
-            this.editUndo.Click += new System.EventHandler(this.editUndo_Click);
+            this.helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.helpAbout});
+            this.helpMenu.Name = "helpMenu";
+            this.helpMenu.Size = new System.Drawing.Size(44, 20);
+            this.helpMenu.Text = "Help";
             // 
-            // editRedo
+            // helpAbout
             // 
-            this.editRedo.Name = "editRedo";
-            this.editRedo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.editRedo.Size = new System.Drawing.Size(152, 22);
-            this.editRedo.Text = "Redo";
-            this.editRedo.Click += new System.EventHandler(this.editRedo_Click);
+            this.helpAbout.Name = "helpAbout";
+            this.helpAbout.Size = new System.Drawing.Size(152, 22);
+            this.helpAbout.Text = "About...";
+            this.helpAbout.Click += new System.EventHandler(this.helpAbout_Click);
             // 
             // MapCombiner
             // 
@@ -311,6 +329,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn filenameColumn;
         private System.Windows.Forms.ToolStripMenuItem editUndo;
         private System.Windows.Forms.ToolStripMenuItem editRedo;
+        private System.Windows.Forms.ToolStripMenuItem helpMenu;
+        private System.Windows.Forms.ToolStripMenuItem helpAbout;
     }
 }
 
