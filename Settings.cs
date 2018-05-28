@@ -10,38 +10,39 @@ using System.Windows.Forms;
 
 namespace MapCombiner
 {
-    public partial class EditTileCount : Form
+    public partial class Settings : Form
     {
-        public EditTileCount()
+        public Settings()
         {
             InitializeComponent();
         }
 
         public int CountX { get; set; }
         public int CountY { get; set; }
+        public int OutputSize { get; set; }
 
-        private void editX_TextChanged(object sender, EventArgs e)
+        private void Settings_Load(object sender, EventArgs e)
+        {
+            editX.Text = CountX.ToString();
+            editY.Text = CountY.ToString();
+            editSize.Text = OutputSize.ToString();
+        }
+
+        private void Settings_FormClosing(object sender, FormClosingEventArgs e)
         {
             int value;
             if (int.TryParse(editX.Text, out value))
             {
                 CountX = value;
             }
-        }
-
-        private void editY_TextChanged(object sender, EventArgs e)
-        {
-            int value;
             if (int.TryParse(editY.Text, out value))
             {
                 CountY = value;
             }
-        }
-
-        private void EditTileCount_Load(object sender, EventArgs e)
-        {
-            editX.Text = CountX.ToString();
-            editY.Text = CountY.ToString();
+            if (int.TryParse(editSize.Text, out value))
+            {
+                OutputSize = value;
+            }
         }
     }
 }

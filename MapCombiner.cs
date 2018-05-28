@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace MapCombiner
 {
@@ -15,55 +19,80 @@ namespace MapCombiner
         public MapCombiner()
         {
             InitializeComponent();
-            this.mapImage.MouseWheel += mapImage_MouseWheel;
+            mapImage.MouseWheel += mapImage_MouseWheel;
+            fileSaveMap.Enabled = false;
 
-            m_gridPos = new Point(0, 0);
-            m_cellSize = 200;
-            m_cellOutputSize = 400;
-            m_grid = new Cell[4, 4];
-            UpdateGridInfo();
+            m_tileMap = new TileMap(4, 4, 400);
+            m_tilePos = new Point(0, 0);
+            m_tileViewSize = 200;
+            m_mapFilename = "";
+            UpdateStatus();
             ResizeImage();
         }
 
         //--------------------------------------------------------------------------------------------------------------
         // Private Implementation
 
-        struct Rotation
-        {
-            public Rotation(float angle, Point offset)
-            {
-                this.angle = angle;
-                this.offset = offset;
-            }
-            public float angle;
-            public Point offset;
-        };
-
-        static Rotation[] rotations = {
-            new Rotation(0, new Point(0,0)),
-            new Rotation(90, new Point(1,0)),
-            new Rotation(180, new Point(1,1)),
-            new Rotation(270, new Point(0,1))
-        };
-
-        struct Cell
-        {
-            public Image image;
-            public int rotation;
-        };
-
-        private Cell[,] m_grid;
-        private Point m_gridPos;
-        private int m_cellSize;
-        private int m_cellOutputSize;
+        private TileMap m_tileMap;
+        private Point m_tilePos;
+        private int m_tileViewSize;
+        private string m_mapFilename;
         private Bitmap m_previewImage;
 
-        private void UpdateGridInfo()
+        private void LoadMap(string filename)
+        {
+            TileMap newMap = null;
+            try
+            {
+                using (var fs = new FileStream(filename, FileMode.Open))
+                {
+                    using (var reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas()))
+                    {
+                        var serializer = new DataContractSerializer(typeof(TileMap));
+                        newMap = (TileMap)serializer.ReadObject(reader);
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Failed to open map file: " + filename, "Open Map", MessageBoxButtons.OK);
+                return;
+            }
+            m_mapFilename = filename;
+            fileSaveMap.Enabled = true;
+            m_tileMap = newMap;
+            ResizeImage();
+            UpdateStatus();
+        }
+
+        private void SaveMap(string filename)
+        {
+            try
+            {
+                using (var fs = new FileStream(filename, FileMode.Create))
+                {
+                    using (var writer = XmlDictionaryWriter.CreateTextWriter(fs))
+                    {
+                        var serializer = new DataContractSerializer(typeof(TileMap));
+                        serializer.WriteObject(writer, m_tileMap);
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Failed to save map file: " + filename, "Save Map", MessageBoxButtons.OK);
+                return;
+            }
+            m_mapFilename = filename;
+            fileSaveMap.Enabled = true;
+        }
+
+        private void UpdateStatus()
         {
             var builder = new StringBuilder();
             builder.AppendFormat("Count: {0},{1} Size: {2}px", 
-                m_grid.GetLength(0), m_grid.GetLength(1), m_cellOutputSize);
-            gridInfo.Text = builder.ToString();
+                m_tileMap.CountX, m_tileMap.CountY, m_tileMap.TileSize);
+            statusInfo.Text = builder.ToString();
 
         }
 
@@ -75,31 +104,36 @@ namespace MapCombiner
                                 "Invalid Tile Count", MessageBoxButtons.OK);
                 return;
             }
-            var newGrid = new Cell[countX, countY];
-            foreach (int x in Enumerable.Range(1, Math.Min(countX, m_grid.GetLength(0)) - 1))
-            {
-                foreach (int y in Enumerable.Range(1, Math.Min(countY, m_grid.GetLength(1)) - 1))
-                {
-                    newGrid[x, y] = m_grid[x, y];
-                }
-            }
-            m_grid = newGrid;
-            UpdateGridInfo();
+            m_tileMap.Resize(countX, countY);
+            UpdateStatus();
             ResizeImage();
+        }
+
+        private void UpdateOutputSize(int size)
+        {
+            if (size < 50 || size > 1000)
+            {
+                MessageBox.Show("Tile output size must be between 50 and 1000", 
+                                "Invalid Tile Size", MessageBoxButtons.OK);
+                return;
+            }
+            m_tileMap.TileSize = size;
+            UpdateStatus();
         }
 
         private void ResizeImage()
         {
-            while (m_grid.GetLength(0) * m_cellSize > 10000 || 
-                   m_grid.GetLength(1) * m_cellSize > 10000)
+            while (m_tileMap.CountX * m_tileViewSize > 10000 || 
+                   m_tileMap.CountY * m_tileViewSize > 10000)
             {
-                m_cellSize = m_cellSize / 2;
+                m_tileViewSize = m_tileViewSize / 2;
             }
             if (m_previewImage != null)
             {
+                mapImage.Image = null;
                 m_previewImage.Dispose();
             }
-            m_previewImage = new Bitmap(m_grid.GetLength(0) * m_cellSize, m_grid.GetLength(1) * m_cellSize);
+            m_previewImage = new Bitmap(m_tileMap.CountX * m_tileViewSize, m_tileMap.CountY * m_tileViewSize);
             mapImage.Image = m_previewImage;
             UpdateImage();
         }
@@ -110,55 +144,30 @@ namespace MapCombiner
             {
                 graphics.Clear(Color.Black);
 
-                for (int x = 0; x < m_grid.GetLength(0); ++x)
+                for (int x = 0; x < m_tileMap.CountX; ++x)
                 {
-                    for (int y = 0; y < m_grid.GetLength(1); ++y)
+                    for (int y = 0; y < m_tileMap.CountY; ++y)
                     {
-                        if (m_grid[x,y].image != null)
+                        if (m_tileMap[x,y].Image != null)
                         {
                             graphics.ResetTransform();
-                            var rot = rotations[m_grid[x, y].rotation];
-                            graphics.TranslateTransform((x + rot.offset.X) * m_cellSize, 
-                                                        (y + rot.offset.Y) * m_cellSize);
+                            var rot = Rotation.Values[m_tileMap[x, y].Rotation];
+                            graphics.TranslateTransform((x + rot.offset.X) * m_tileViewSize, 
+                                                        (y + rot.offset.Y) * m_tileViewSize);
                             graphics.RotateTransform(rot.angle);
-                            graphics.DrawImage(m_grid[x, y].image, 0, 0, 
-                                m_cellSize + rot.offset.Y, m_cellSize + rot.offset.X);
+                            graphics.DrawImage(m_tileMap[x, y].Image, 0, 0, 
+                                m_tileViewSize + rot.offset.Y, m_tileViewSize + rot.offset.X);
                         }
-                        if (x == m_gridPos.X && y == m_gridPos.Y)
+                        if (x == m_tilePos.X && y == m_tilePos.Y)
                         {
                             graphics.ResetTransform();
                             graphics.DrawRectangle(Pens.Yellow, 
-                                x * m_cellSize, y * m_cellSize, m_cellSize - 1, m_cellSize - 1);
+                                x * m_tileViewSize, y * m_tileViewSize, m_tileViewSize - 1, m_tileViewSize - 1);
                         }
                     }
                 }
             }
             mapImage.Invalidate();
-        }
-
-        private static Result<Image> LoadImage(string filename)
-        {
-            Bitmap newImage = null;
-            try
-            {
-                using (Image fileImage = Image.FromFile(filename))
-                {
-                    newImage = new Bitmap(fileImage);
-                }
-            }
-            catch (OutOfMemoryException)
-            {
-                return Result<Image>.Error("Unsupported image format: " + filename);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                return Result<Image>.Error("File not found: " + filename);
-            }
-            catch
-            {
-                return Result<Image>.Error("Unknown error");
-            }
-            return Result<Image>.Success(newImage);
         }
 
         //--------------------------------------------------------------------------------------------------------------
@@ -169,7 +178,7 @@ namespace MapCombiner
             Close();
         }
 
-        private void fileOpenImages_Click(object sender, EventArgs e)
+        private void fileAddImages_Click(object sender, EventArgs e)
         {
             var ofd = new OpenFileDialog();
             ofd.Title = "Open Images";
@@ -182,10 +191,10 @@ namespace MapCombiner
             string errorText = "";
             foreach (var filename in ofd.FileNames)
             {
-                var result = LoadImage(filename);
+                var result = ImageDatabase.Load(filename);
                 if (result.Ok)
                 {
-                    imageList.Rows.Add(new object[] { result.Value });
+                    imageList.Rows.Add(new object[] { result.Value, filename });
                 } else
                 {
                     errorText = errorText + result.Status + "\n";
@@ -199,48 +208,39 @@ namespace MapCombiner
 
         private void imageList_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            var image = imageList.Rows[e.RowIndex].Cells[e.ColumnIndex].Value as Image;
-            if (image == null)
-            {
-                return;
-            }
-
-            using (var graphics = Graphics.FromImage(m_previewImage))
-            {
-                m_grid[m_gridPos.X, m_gridPos.Y].image = image;
-                m_grid[m_gridPos.X, m_gridPos.Y].rotation = 0;
-                UpdateImage();
-            }
+            m_tileMap[m_tilePos.X, m_tilePos.Y].Reset( 
+                imageList.Rows[e.RowIndex].Cells[e.ColumnIndex + 1].Value as string);
+            UpdateImage();
         }
 
         private void mapImage_MouseClick(object sender, MouseEventArgs e)
         {
-            var newPos = new Point(e.Location.X / m_cellSize, e.Location.Y / m_cellSize);
-            if (newPos.X < 0 || newPos.X >= m_grid.GetLength(0) || 
-                newPos.Y < 0 || newPos.Y >= m_grid.GetLength(1))
+            var newPos = new Point(e.Location.X / m_tileViewSize, e.Location.Y / m_tileViewSize);
+            if (newPos.X < 0 || newPos.X >= m_tileMap.CountX || 
+                newPos.Y < 0 || newPos.Y >= m_tileMap.CountY)
             {
                 return;
             }
 
-            m_gridPos = newPos;
+            m_tilePos = newPos;
             if (e.Button == MouseButtons.Right)
             {
-                m_grid[m_gridPos.X, m_gridPos.Y].rotation = 
-                    (m_grid[m_gridPos.X, m_gridPos.Y].rotation + 1) % rotations.Length;
+                m_tileMap[m_tilePos.X, m_tilePos.Y].Rotation = 
+                    (m_tileMap[m_tilePos.X, m_tilePos.Y].Rotation + 1) % Rotation.Values.Length;
             }
             UpdateImage();
         }
 
         private void mapImage_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (e.Delta < 0 && m_cellSize > 50)
+            if (e.Delta < 0 && m_tileViewSize > 50)
             {
-                m_cellSize /= 2;
+                m_tileViewSize /= 2;
                 ResizeImage();
             }
-            else if (e.Delta > 0 && m_cellSize < 500)
+            else if (e.Delta > 0 && m_tileViewSize < 500)
             {
-                m_cellSize *= 2;
+                m_tileViewSize *= 2;
                 ResizeImage();
             }
         }
@@ -251,51 +251,85 @@ namespace MapCombiner
             {
                 case Keys.Delete:
                 case Keys.Back:
-                    m_grid[m_gridPos.X, m_gridPos.Y].image = null;
+                    m_tileMap[m_tilePos.X, m_tilePos.Y].Reset();
                     UpdateImage();
                     break;
                 case Keys.Up:
-                    if (m_gridPos.Y > 0)
+                    if (m_tilePos.Y > 0)
                     {
-                        m_gridPos.Y -= 1;
+                        m_tilePos.Y -= 1;
                         UpdateImage();
                     }
                     break;
                 case Keys.Down:
-                    if (m_gridPos.Y < m_grid.GetLength(1) - 1)
+                    if (m_tilePos.Y < m_tileMap.CountY - 1)
                     {
-                        m_gridPos.Y += 1;
+                        m_tilePos.Y += 1;
                         UpdateImage();
                     }
                     break;
                 case Keys.Left:
-                    if (m_gridPos.X > 0)
+                    if (m_tilePos.X > 0)
                     {
-                        m_gridPos.X -= 1;
+                        m_tilePos.X -= 1;
                         UpdateImage();
                     }
                     break;
                 case Keys.Right:
-                    if (m_gridPos.X < m_grid.GetLength(0) - 1)
+                    if (m_tilePos.X < m_tileMap.CountX - 1)
                     {
-                        m_gridPos.X += 1;
+                        m_tilePos.X += 1;
                         UpdateImage();
                     }
                     break;
             }
         }
 
-        private void editTileCount_Click(object sender, EventArgs e)
+        private void editSettings_Click(object sender, EventArgs e)
         {
-            using (var editTileCount = new EditTileCount())
+            using (var settings = new Settings())
             {
-                editTileCount.CountX = m_grid.GetLength(0);
-                editTileCount.CountY = m_grid.GetLength(1);
-                if (editTileCount.ShowDialog() == DialogResult.OK)
+                settings.CountX = m_tileMap.CountX;
+                settings.CountY = m_tileMap.CountY;
+                settings.OutputSize = m_tileMap.TileSize;
+                if (settings.ShowDialog() == DialogResult.OK)
                 {
-                    UpdateTileCount(editTileCount.CountX, editTileCount.CountY);
+                    UpdateTileCount(settings.CountX, settings.CountY);
+                    UpdateOutputSize(settings.OutputSize);
                 }
             }
+        }
+
+        private void fileOpenMap_Click(object sender, EventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            ofd.Title = "Open Map";
+            ofd.Multiselect = false;
+            ofd.Filter = "Map files (*.mc)|*.mc|All files (*.*)|*.*";
+            ofd.FilterIndex = 1;
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            LoadMap(ofd.FileName);
+        }
+
+        private void fileSaveMap_Click(object sender, EventArgs e)
+        {
+            SaveMap(m_mapFilename);
+        }
+
+        private void fileAaveMapAs_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.FileName = m_mapFilename;
+            sfd.Title = "Save Map As";
+            sfd.Filter = "Map files (*.mc)|*.mc|All files (*.*)|*.*";
+            sfd.FilterIndex = 1;
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            SaveMap(sfd.FileName);
         }
     }
 }
