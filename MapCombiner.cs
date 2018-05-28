@@ -357,7 +357,7 @@ namespace MapCombiner
             SaveMap(m_mapFilename);
         }
 
-        private void fileAaveMapAs_Click(object sender, EventArgs e)
+        private void fileSaveMapAs_Click(object sender, EventArgs e)
         {
             var sfd = new SaveFileDialog();
             sfd.AddExtension = true;

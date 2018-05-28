@@ -28,14 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.status = new System.Windows.Forms.StatusStrip();
             this.statusInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileOpenMap = new System.Windows.Forms.ToolStripMenuItem();
             this.fileSaveMap = new System.Windows.Forms.ToolStripMenuItem();
-            this.fileAaveMapAs = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileSaveMapAs = new System.Windows.Forms.ToolStripMenuItem();
             this.fileAddImages = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExportMap = new System.Windows.Forms.ToolStripMenuItem();
             this.fileExit = new System.Windows.Forms.ToolStripMenuItem();
@@ -89,7 +89,7 @@
             this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileOpenMap,
             this.fileSaveMap,
-            this.fileAaveMapAs,
+            this.fileSaveMapAs,
             this.fileAddImages,
             this.fileExportMap,
             this.fileExit});
@@ -113,12 +113,12 @@
             this.fileSaveMap.Text = "Save Map";
             this.fileSaveMap.Click += new System.EventHandler(this.fileSaveMap_Click);
             // 
-            // fileAaveMapAs
+            // fileSaveMapAs
             // 
-            this.fileAaveMapAs.Name = "fileAaveMapAs";
-            this.fileAaveMapAs.Size = new System.Drawing.Size(182, 22);
-            this.fileAaveMapAs.Text = "Save Map As...";
-            this.fileAaveMapAs.Click += new System.EventHandler(this.fileAaveMapAs_Click);
+            this.fileSaveMapAs.Name = "fileSaveMapAs";
+            this.fileSaveMapAs.Size = new System.Drawing.Size(182, 22);
+            this.fileSaveMapAs.Text = "Save Map As...";
+            this.fileSaveMapAs.Click += new System.EventHandler(this.fileSaveMapAs_Click);
             // 
             // fileAddImages
             // 
@@ -188,14 +188,14 @@
             this.imageColumn,
             this.filenameColumn});
             this.imageList.Cursor = System.Windows.Forms.Cursors.Hand;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Transparent;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.imageList.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Transparent;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.imageList.DefaultCellStyle = dataGridViewCellStyle2;
             this.imageList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.imageList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             this.imageList.Location = new System.Drawing.Point(0, 0);
@@ -286,7 +286,7 @@
         private System.Windows.Forms.ToolStripMenuItem editMenu;
         private System.Windows.Forms.ToolStripStatusLabel statusInfo;
         private System.Windows.Forms.ToolStripMenuItem editSettings;
-        private System.Windows.Forms.ToolStripMenuItem fileAaveMapAs;
+        private System.Windows.Forms.ToolStripMenuItem fileSaveMapAs;
         private System.Windows.Forms.DataGridViewImageColumn imageColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn filenameColumn;
     }
